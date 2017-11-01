@@ -12,68 +12,61 @@
     </h1>
 </section>
 
-<!-- Main content -->
-<section class="content">
-    <div class="row">
-        <!-- Horizontal Form -->
-        <div class="box box-info">
-            <form class="form-horizontal">
-                <div class="form-group">
-                    <label for="inputUserName" class="col-sm-2 control-label">登录名</label>
+<!-- Horizontal Form -->
+<div class="box box-info">
+    <form class="form-horizontal">
+        <div class="box-body">
+            <div class="form-group">
+                <label for="inputUserName" class="col-sm-2 control-label">登录名</label>
 
-                    <div class="col-sm-10">
-                        <input type="text" class="form-control" id="inputUserName" placeholder="登录名">
-                    </div>
+                <div class="col-sm-10">
+                    <input type="text" class="form-control" id="inputUserName" placeholder="登录名">
                 </div>
-                <div class="form-group">
-                    <label for="inputUserEmail" class="col-sm-2 control-label">邮箱</label>
+            </div>
+            <div class="form-group">
+                <label for="inputUserEmail" class="col-sm-2 control-label">邮箱</label>
 
-                    <div class="col-sm-10">
-                        <input type="email" class="form-control" id="inputUserEmail" placeholder="邮箱">
-                    </div>
+                <div class="col-sm-10">
+                    <input type="email" class="form-control" id="inputUserEmail" placeholder="邮箱">
                 </div>
-                <div class="form-group">
-                    <label for="inputPassword" class="col-sm-2 control-label">设置登录密码</label>
+            </div>
+            <div class="form-group">
+                <label for="inputPassword" class="col-sm-2 control-label">设置登录密码</label>
 
-                    <div class="col-sm-10">
-                        <input type="password" class="form-control" id="inputPassword" placeholder="设置登录密码">
-                    </div>
+                <div class="col-sm-10">
+                    <input type="password" class="form-control" id="inputPassword" placeholder="设置登录密码">
                 </div>
-                <div class="form-group">
-                    <label for="inputRePassword" class="col-sm-2 control-label">确认登录密码</label>
+            </div>
+            <div class="form-group">
+                <label for="inputRePassword" class="col-sm-2 control-label">确认登录密码</label>
 
-                    <div class="col-sm-10">
-                        <input type="password" class="form-control" id="inputRePassword" placeholder="确认登录密码">
-                    </div>
+                <div class="col-sm-10">
+                    <input type="password" class="form-control" id="inputRePassword" placeholder="确认登录密码">
                 </div>
-                <div class="form-group">
-                    <label for="roleId" class="col-sm-2 control-label">角色</label>
-                    <div class="col-sm-10">
-                        <select name="roleId" class="form-control" id="roleId">
-                            <option th:each="role,userStat:${roleOptions}" th:value="${role.roleId}" th:text="${role.roleName}"></option>
-                        </select>
-                    </div>
-                    <!-- /.box-body -->
-                    <div class="box-footer">
-                        <button type="button" class="btn btn-default">取消</button>
-                        <button type="button" class="btn btn-primary">新增</button>
-                    </div>
-                    <!-- /.box-footer -->
+            </div>
+            <div class="form-group">
+                <label for="roleId" class="col-sm-2 control-label">角色</label>
+                <div class="col-sm-10">
+                    <select name="roleId" class="form-control" id="roleId">
+                        <option th:each="role,userStat:${roleOptions}" th:value="${role.roleId}"
+                                th:text="${role.roleName}"></option>
+                    </select>
                 </div>
-            </form>
+            </div>
         </div>
-        <!-- /.box -->
-    </div>
-    <!-- /.row -->
-</section>
-<!-- /.content -->
+        <div class="box-footer">
+            <button type="button" class="btn btn-default">取消</button>
+            <button type="button" class="btn btn-primary">新增</button>
+        </div>
+    </form>
+</div>
 </body>
 <div th:include="footer"></div>
 <script>
     $(function () {
         //初始化ajax提交代码;//避免提交400，415错误，使用此方法.
         $.ajaxSetup({
-            contentType : 'application/json'
+            contentType: 'application/json'
         });
 
         $('#inputRePassword').blur(function () {
