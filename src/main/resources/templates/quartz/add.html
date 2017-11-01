@@ -1,0 +1,96 @@
+<!DOCTYPE HTML>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org">
+<head th:include="header">
+</head>
+<body>
+<!-- Content Header (Page header) -->
+<section class="content-header">
+    <h1>
+        定时任务管理
+        <small>新增</small>
+    </h1>
+</section>
+
+
+<!-- Main content -->
+<!-- Horizontal Form -->
+<div class="box box-info">
+    <div class="box-header with-border">
+    </div>
+    <form class="form-horizontal">
+        <div class="form-group">
+            <label for="inputNameCode" class="col-sm-2 control-label">任务名Code</label>
+
+            <div class="col-sm-9">
+                <input type="text" class="form-control" id="inputNameCode" placeholder="任务名Code">
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="inputGroupCode" class="col-sm-2 control-label">任务组Code</label>
+
+            <div class="col-sm-9">
+                <input type="text" class="form-control" id="inputGroupCode" placeholder="任务组Code">
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="inputDescription" class="col-sm-2 control-label">任务描述</label>
+
+            <div class="col-sm-9">
+                <input type="text" class="form-control" id="inputDescription" placeholder="任务描述">
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="inputCallUrl" class="col-sm-2 control-label">任务调用的接口地址</label>
+
+            <div class="col-sm-9">
+                <input type="text" class="form-control" id="inputCallUrl"
+                       placeholder="http://192.168.17.1:8080/hello">
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="inputCron" class="col-sm-2 control-label">任务cron</label>
+            <div class="col-sm-9">
+                <input type="text" class="form-control" id="inputCron" placeholder="0 0/1 * * * ?">
+            </div>
+            <!-- /.box-footer -->
+        </div>
+        <div class="box-footer">
+            <button type="button" class="btn btn-default">取消</button>
+            <button type="button" class="btn btn-primary">新增</button>
+        </div>
+    </form>
+</div>
+<!-- /.content -->
+</body>
+<div th:include="footer"></div>
+<script>
+    $(function () {
+        //初始化ajax提交代码;//避免提交400，415错误，使用此方法.
+        $.ajaxSetup({
+            contentType: 'application/json'
+        });
+    });
+
+    $('.btn-primary').on('click', function () {
+        //避免提交400，415错误，使用此方法.
+        var reqData = new Object();
+        reqData.nameCode = $.trim($('#inputNameCode').val());
+        reqData.groupCode = $.trim($('#inputGroupCode').val());
+        reqData.description = $.trim($('#inputDescription').val());
+        reqData.callUrl = $('#inputCallUrl').val();
+        reqData.cron = $('#inputCron').val();
+
+        $.post('/job', JSON.stringify(reqData), function (data) {
+            if (data.code == 1) {
+                alert('success');
+                window.location.href = '/job/index';
+            } else {
+                alert(data.message);
+            }
+        });
+
+    });
+
+</script>
+</html>

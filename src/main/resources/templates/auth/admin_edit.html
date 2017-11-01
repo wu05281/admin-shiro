@@ -1,0 +1,130 @@
+<!DOCTYPE HTML>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org">
+<head th:include="header">
+</head>
+<body>
+<!-- Content Header (Page header) -->
+<section class="content-header">
+    <h1>
+        个人信息管理
+        <small>修改</small>
+    </h1>
+</section>
+
+<!-- Main content -->
+<section class="content">
+    <div class="row">
+        <!-- Horizontal Form -->
+        <div class="box box-info">
+            <form class="form-horizontal" id="changePwdForm">
+                <div class="box-body">
+                    <div class="form-group">
+                        <label for="inputOrigPassword" class="col-sm-2 control-label">原密码</label>
+                        <div class="col-sm-10">
+                            <input type="password" class="form-control" id="inputOrigPassword" name="inputOrigPassword"
+                                   placeholder="请输入原密码">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="inputNewPassword" class="col-sm-2 control-label">新密码</label>
+                        <div class="col-sm-10">
+                            <input type="password" class="form-control" id="inputNewPassword" name="inputNewPassword"
+                                   placeholder="请输入新密码">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="inputConfirmPassword" class="col-sm-2 control-label">确认密码</label>
+                        <div class="col-sm-10">
+                            <input type="password" class="form-control" id="inputConfirmPassword"
+                                   name="inputConfirmPassword" placeholder="确认新密码">
+                        </div>
+                    </div>
+                </div>
+                <!-- /.box-body -->
+                <div class="box-footer">
+                    <button type="button" id="cancelBtn" class="btn btn-default">取消</button>
+                    <button type="button" id="confirmBtn" class="btn btn-primary">修改</button>
+                </div>
+                <!-- /.box-footer -->
+            </form>
+        </div>
+        <!-- /.box -->
+    </div>
+    <!-- /.row -->
+</section>
+<!-- /.content -->
+</body>
+<div th:include="footer">
+</div>
+<script>
+    $(function () {
+        //初始化ajax提交代码;//避免提交400，415错误，使用此方法.
+        $.ajaxSetup({
+            contentType: 'application/json'
+        });
+        $('#changePwdForm').bootstrapValidator({
+            message: 'This value is not valid',
+            feedbackIcons: {
+                valid: 'glyphicon glyphicon-ok',
+                invalid: 'glyphicon glyphicon-remove',
+                validating: 'glyphicon glyphicon-refresh'
+            },
+            fields: {
+                inputOrigPassword: {
+                    message: '原密码不正确',
+                    validators: {
+                        notEmpty: {
+                            message: '原密码不能为空'
+                        }
+                    }
+                },
+                inputNewPassword: {
+                    validators: {
+                        notEmpty: {
+                            message: '新密码不能为空'
+                        }
+                    }
+                },
+                inputConfirmPassword: {
+                    validators: {
+                        notEmpty: {
+                            message: '确认密码不能为空'
+                        },
+                        identical: {
+                            field: 'inputNewPassword',
+                            message: '两次输入密码不一致'
+                        }
+                    }
+                }
+            }
+        });
+    });
+
+    $('#confirmBtn').click(function () {
+        //获取表单对象
+        var bootstrapValidator = $('#changePwdForm').data('bootstrapValidator');
+        //手动触发验证
+        bootstrapValidator.validate();
+        if(bootstrapValidator.isValid()){
+            //表单提交的方法、比如ajax提交
+            var reqData = new Object();
+            reqData.origPassword = $('#inputOrigPassword').val();
+            reqData.newPassword = $('#inputNewPassword').val();
+            $.ajax({
+                url: '/admin',
+                type: 'PUT',
+                data: JSON.stringify(reqData),
+                success: function (response) {
+                    if (response.code == 1) {
+                        alert('success');
+                        window.parent.location.href = '/logout';
+                    } else {
+                        alert(response.message);
+                    }
+                }
+            });
+        }
+    });
+</script>
+</html>

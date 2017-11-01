@@ -1,0 +1,288 @@
+<!DOCTYPE HTML>
+<html lang="zh"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head th:include="header">
+</head>
+<body>
+<div class="wrapper">
+    <section class="content">
+        <div class="box-header">
+            <h3 class="box-title">
+                角色管理
+                <small>查询, 新增 ...</small>
+            </h3>
+        </div>
+
+        <!--搜索栏-->
+        <div class="row">
+            <!-- Horizontal Form -->
+            <div class="panel panel-default">
+                <div class="panel-body">
+                    <form class="form-horizontal">
+                        <div class="form-group">
+                            <label for="userName" class="col-sm-1 control-label">角色名称</label>
+                            <div class="col-sm-2">
+                                <input type="text" class="form-control" id="userName" placeholder="角色名称">
+                            </div>
+
+                            <label for="email" class="col-sm-1 control-label">邮箱</label>
+                            <div class="col-sm-2">
+                                <input type="email" class="form-control" id="email" placeholder="邮箱">
+                            </div>
+
+                            <label for="reservation" class="col-sm-1 control-label">创建日期</label>
+                            <div class="col-sm-3">
+                                <input type="text" class="form-control" id="reservation">
+                            </div>
+
+                            <div class="col-sm-2" style="text-align:left;">
+                                <button shiro:hasPermission="admin:index" type="button" id="queryBtn" class="btn btn-primary">查询</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- 查询的结果列表 -->
+        <div class="row">
+            <div class="col-xs-12">
+                <div class="box">
+                    <div class="box-body">
+                        <section class="content table-content">
+                            <table id="dataGrid" class="table table-bordered table-hover"></table>
+                        </section>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<!-- 针对列表数据项的增删改增操作按钮栏 -->
+<div id="toolbar">
+    <button shiro:hasPermission="role:save" type="button" id="toAddBtn" class="btn btn-primary">新增</button>
+    <button shiro:hasPermission="admin:index" type="button" id="authBtn" class="btn btn-primary">授权</button>
+    <button shiro:hasPermission="role:delete" type="button" id="delBtn" class="btn btn-danger">删除</button>
+</div>
+
+<!-- 模态框（Modal） -->
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                    &times;
+                </button>
+                <h4 class="modal-title" id="myModalLabel">
+                    设置角色权限.
+                </h4>
+            </div>
+            <div class="modal-body">
+                <div id="menuTree"></div>
+            </div>
+            <div class="alert alert-warning alert-dismissible hide" role="alert" id="errorDiv">
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span>
+                </button>
+                <span id="errMsg"></span>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" id="saveBtn" class="btn btn-warning" data-loading-text="提交中..." autocomplete="off">保存
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+<div th:include="footer"></div>
+<script type="text/javascript" src="//cdn.bootcss.com/jquery-treegrid/0.2.0/js/jquery.treegrid.min.js"></script>
+<script type="text/javascript" src="//cdn.bootcss.com/bootstrap-treeview/1.2.0/bootstrap-treeview.min.js"></script>
+<script type="text/javascript" th:src="@{/js/treeview.js}"></script>
+<script type="text/javascript">
+    $table = $("#dataGrid");
+    $(function () {
+        initDataGrid();
+        $('#reservation').daterangepicker({
+            autoUpdateInput: false,//不设置默认值
+            // startDate: moment().startOf('day'),
+            //endDate: moment(),
+            minDate: '10/01/2015',    //最小时间
+//            maxDate : moment(), //最大时间
+            dateLimit: {
+                days: 30
+            }, //起止时间的最大间隔
+            showDropdowns: true,
+            showWeekNumbers: false, //是否显示第几周
+            timePicker: false, //是否显示小时和分钟
+            timePickerIncrement: 60, //时间的增量，单位为分钟
+            timePicker12Hour: false, //是否使用12小时制来显示时间
+            ranges: {
+                //'最近1小时': [moment().subtract('hours',1), moment()],
+                '今日': [moment().startOf('day'), moment()],
+                '昨日': [moment().subtract(1, 'days').startOf('day'), moment().subtract(1, 'days').endOf('day')],
+                '最近7日': [moment().subtract(6, 'days'), moment()],
+                '最近30日': [moment().subtract(29, 'days'), moment()]
+            },
+            opens: 'right', //日期选择框的弹出位置
+            buttonClasses: ['btn btn-default'],
+            applyClass: 'btn-small btn-primary blue',
+            cancelClass: 'btn-small',
+            format: 'YYYY-MM-DD HH:mm:ss', //控件中from和to 显示的日期格式
+            separator: ' to ',
+            locale: {
+                applyLabel: '确定',
+                cancelLabel: '取消',
+                fromLabel: '起始时间',
+                toLabel: '结束时间',
+                customRangeLabel: '自定义',
+                daysOfWeek: ['日', '一', '二', '三', '四', '五', '六'],
+                monthNames: ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'],
+                firstDay: 1
+            }
+        }, function (start, end) {//格式化日期显示框
+//            $('#reservation').val(start.format('YYYY-MM-DD HH:mm:ss') + ' - ' + end.format('YYYY-MM-DD HH:mm:ss'));
+            $('#reservation').val(start.format('YYYY-MM-DD') + ' - ' + end.format('YYYY-MM-DD'));
+        })
+    });
+    function initDataGrid() {
+        $table.bootstrapTable({
+            height: tableModel.getHeight(),
+            idField: "roleId",
+            columns: [[
+                {checkbox: true, formatter: checkboxFormatter},
+                {title: "角色名称", field: "roleName"},
+                {title: "角色描述", field: "roleDesc"},
+                {title: "创建时间", field: "createdAt"},
+                {title: "更新日期", field: "updatedAt"}
+            ]],
+            url: '/role/list',
+            method: 'POST',
+            dataType: 'json',
+            contentType: "application/x-www-form-urlencoded",
+            cache: false,
+            striped: true, //是否显示行间隔色
+            toolbar: "#toolbar",
+            queryParams: function (params) {
+                return {
+                    pageIndex: this.pageNumber,
+                    pageSize: this.pageSize,
+                    userName: $("#userName").val(),
+                    email: $("#email").val(),
+                    reservation: $("#reservation").val()
+                };
+            },
+            responseHandler: function (res) {
+                return {
+                    rows: res.t.items,
+                    total: res.t.rowsCount
+                }
+            },
+//            sortName: 'createdAt',
+//            sortOrder: 'asc',
+            pagination: true,
+            singleSelect: true,                     // 单选checkbox
+            sidePagination: 'server',
+            pageNumber: 1, //初始化加载第一页，默认第一页
+            pageSize: 20, //每页的记录行数（*）
+            pageList: [20, 50, 100] ////可供选择的每页的行数（*）
+
+        });
+    }
+
+    function checkboxFormatter(value, row, index) {
+        if (row.editEnable == false)
+            return {
+                disabled: false,//设置是否可用
+                //checked : true//设置选中
+            };
+        return value;
+    }
+
+    $('#queryBtn').on('click', function () {
+        $table.bootstrapTable('refresh');    //刷新表格
+    });
+
+    $('#authBtn').on('click', function () {
+        var selectContent = $table.bootstrapTable('getSelections')[0];
+        if (typeof(selectContent) == 'undefined') {
+            alert('请选择一列数据!');
+            return;
+        } else {
+            var _roleId = selectContent.roleId;
+            //展示权限树.
+            $.getJSON('/role/menu_tree?roleId=' + _roleId, function (data) {
+                if (data.code == 1) {
+                    $('#menuTree').treeview({
+                        data: data.t,
+                        showIcon: false,
+                        highlightSelected: false,
+                        showCheckbox: true,
+                        onNodeChecked: nodeChecked,
+                        onNodeUnchecked: nodeUnchecked
+                    });
+                    //默认展开全部节点，级数设置为2级。
+                    $('#menuTree').treeview('expandAll', {levels: 2, silent: true});
+                }
+            });
+
+            $('#errorDiv').attr("class", "alert alert-warning alert-dismissible hide");
+            $('#myModal').modal({backdrop: 'static', keyboard: false});//禁用点击空白关闭方式打开模态框
+        }
+    });
+
+
+    $('#toAddBtn').on('click', function () {
+        window.location.href = '/role/toAdd';
+    });
+
+    $('#delBtn').on('click', function () {
+        var selectContent = $table.bootstrapTable('getSelections')[0];
+        if (typeof(selectContent) == 'undefined') {
+            alert('请选择一列数据!');
+            return false;
+        }
+        var _roleId = selectContent.roleId;
+        if (confirm("确定要删除数据吗？")) {
+            $.ajax({
+                type: 'DELETE',
+                url: '/role/del/' + _roleId,
+                success: function (data) {
+                    if (data.code == 1) {
+                        alert('删除成功');
+                        doQuery();
+                    } else {
+                        alert('删除失败，原因：' + data.message);
+                    }
+                }
+            })
+
+        }
+    });
+
+    $('#saveBtn').on('click', function () {
+        var $btn = $(this).button('loading');
+        var _roleId = $table.bootstrapTable('getSelections')[0].roleId;
+        var checkNodes = $('ul.list-group>li.node-checked').map(function () {
+            return $('#menuTree').treeview('getNode', [$(this).data('nodeid')]).id;
+        }).get().join(",");
+        $.post('/role/grant', $.param({roleId: _roleId, menuIds: checkNodes}, true), function (data) {
+            if (data.code == 1) {
+                $('#errorDiv').attr("class", "alert alert-success");
+                $('#errMsg').html('提交成功');
+                setTimeout(function () {
+                    $btn.button('reset');
+                    $("#myModal").modal("hide");
+                }, 3000);
+
+            } else {
+                $('#errorDiv').attr("class", "alert alert-warning");
+                $('#errMsg').html(data.message);
+                $btn.button('reset');
+            }
+        });
+
+    });
+</script>
+</html>

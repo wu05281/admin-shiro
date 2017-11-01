@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="zh"
+      xmlns:th="http://www.thymeleaf.org">
+<head th:include="header"></head>
+<body>
+<div class="wrapper">
+    <section class="content">
+        <div class="box-header">
+            <h3 class="box-title">
+                定时任务管理
+                <small>查询, 新增 ...</small>
+            </h3>
+        </div>
+
+        <!--搜索栏-->
+        <div class="row">
+            <!-- Horizontal Form -->
+            <div class="panel panel-default">
+                <div class="panel-body">
+                    <form id="formSearch" class="form-horizontal">
+                        <div class="form-group" style="margin-top:15px">
+                            <label class="control-label col-sm-2" for="inputDesc">任务描述信息</label>
+                            <div class="col-sm-4">
+                                <input type="text" class="form-control" id="inputDesc" placeholder="任务描述信息">
+                            </div>
+                            <label class="control-label col-sm-1" for="selectState">任务状态</label>
+                            <div class="col-sm-2">
+                                <select id="selectState" class="form-control">
+                                    <option value="0">全部</option>
+                                    <option value="1">正常</option>
+                                    <option value="2">暂停</option>
+                                </select>
+                            </div>
+                            <div class="col-sm-3" style="text-align:left;">
+                                <button type="button" style="margin-left:50px" id="queryBrn" class="btn btn-primary">
+                                    查询
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <!-- 查询的结果列表 -->
+        <div class="row">
+            <div class="col-xs-12">
+                <div class="box">
+                    <div class="box-body">
+                        <section class="content table-content">
+                            <table id="dataGrid" class="table table-bordered table-hover"></table>
+                        </section>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 针对列表数据项的增删改增操作按钮栏 -->
+    <div id="toolbar">
+        <a href="/job/toAdd" class="btn btn-primary">新增</a>
+        <button type="button" id="toUpdBtn" class="btn btn-primary">修改</button>
+        <button type="button" id="runNowBtn" class="btn btn-warning">立即执行</button>
+        <button type="button" id="stopBtn" class="btn btn-danger">暂停</button>
+        <button type="button" id="resumeBtn" class="btn btn-primary">恢复</button>
+        <!--<button type="button" id="delBtn" class="btn btn-danger">删除</button>-->
+
+    </div>
+</div>
+
+
+<!-- 模态框（Modal） -->
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                    &times;
+                </button>
+                <h4 class="modal-title" id="myModalLabel">
+                    修改任务执行cron表达式.
+                </h4>
+            </div>
+            <div class="modal-body">
+                <div class="panel-body">
+                    <dl class="dl-horizontal">
+                        <dt>nameCode</dt>
+                        <dd id="originalNameCode"></dd>
+                        <dt>groupCode</dt>
+                        <dd id="originalGroupCode"></dd>
+                        <dt>任务Description</dt>
+                        <dd id="originalDescription"></dd>
+                        <br/>
+                        <dt>任务原执行cron</dt>
+                        <dd id="originalCron"></dd>
+                    </dl>
+                </div>
+
+                <div class="panel-body">
+                    <form role="form">
+                        <dl class="dl-horizontal">
+                            <dt>执行cron更新为</dt>
+                            <dd><input type="text" class="form-control" id="inputnewcron" placeholder="新cron"></dd>
+                        </dl>
+                    </form>
+                </div>
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" id="cornUpdBtn" class="btn btn-warning" data-loading-text="提交中..."
+                        autocomplete="off">保存
+                </button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal -->
+</div>
+</body>
+<div th:replace="footer"></div>
+<script>
+    $table = $('#dataGrid');
+    $(function () {
+        //初始化ajax提交代码;//避免提交400，415错误，使用此方法.
+        $.ajaxSetup({
+            contentType: 'application/json'
+        });
+        initDataGrid();
+    });
+    function initDataGrid() {
+        $table.bootstrapTable({
+            height: tableModel.getHeight(),
+            idField: "id",
+            columns: [[
+                {checkbox: true, formatter: checkboxFormatter},
+                {title: "名编码", field: "nameCode", searchable: true},
+                {title: "组编码", field: "groupCode", searchable: true},
+                {title: "描述", field: "description", searchable: true},
+                {title: "状态", field: "state", formatter:getStateName},
+                {title: "任务cron", field: "cron"},
+                {title: "调用地址", field: "callUrl"},
+                {title: "创建时间", field: "createdAt"},
+                {title: "更新日期", field: "updatedAt"},
+                {title: "操作", field: "operate", align: 'center', events: operateEvents, formatter: operateFormatter}
+            ]],
+//            url: '/admin/list',
+//            method: 'POST',
+            url: '/jobs',
+            method: 'GET',
+            dataType: 'json',
+            contentType: "application/x-www-form-urlencoded",
+            cache: false,
+            striped: true, //是否显示行间隔色
+            toolbar: "#toolbar",
+//            search : true,
+//            strictSearch :true,
+//            searchOnEnterKey : true,
+            showExport: true,
+            exportDataType: 'all',
+            queryParams: function (params) {
+                return {
+                    description: $('#inputDesc').val(),
+                    state:$('#selectState').val(),
+                    pageIndex: this.pageNumber,
+                    pageSize: this.pageSize
+                };
+            },
+            responseHandler: function (res) {
+                return {
+                    rows: res.t.items,
+                    total: res.t.rowsCount
+                }
+            },
+//            sortName: 'createdAt',
+//            sortOrder: 'asc',
+            pagination: true,
+            sidePagination: 'server',
+            singleSelect: true,
+            pageNumber: 1, //初始化加载第一页，默认第一页
+            pageSize: 20, //每页的记录行数（*）
+            pageList: [20, 50, 100] ////可供选择的每页的行数（*）
+        });
+    }
+
+    function checkboxFormatter(value, row, index) {
+        return {
+            disabled: false,//设置是否可用
+            //checked : true//设置选中
+        };
+        return value;
+    }
+
+    function getStateName(value, row, index) {
+        if (value == 1) {
+            return "正常";
+        } else if (value == 2) {
+            return "暂停";
+        } else {
+            return "未知";
+        }
+    }
+
+    function operateFormatter(value, row, index) {
+        return [
+            '<a href="/quartz/from?uid=' + row.id + '" >',
+            '<i class="glyphicon glyphicon-edit"></i>详情',
+            '</a>  ',
+            '<a href="/quartz/from?uid=' + row.id + '" >',
+            '<i class="glyphicon glyphicon-edit"></i>执行记录',
+            '</a>  ',
+
+        ].join('');
+    }
+    window.operateEvents = {
+        'click .remove': function (e, value, row, index) {
+            operaModel.delRow(row.id, '/quartz/delete', 'id');
+        }
+    };
+
+    $('#queryBrn').on('click',function (params) {
+        $table.bootstrapTable('refresh');    //刷新表格
+    });
+
+    //修改
+    $('#toUpdBtn').on('click', function () {
+        var selectContent = $table.bootstrapTable('getSelections')[0];
+        if (typeof(selectContent) == 'undefined') {
+            alert('请选择一列数据!');
+            return;
+        } else {
+            $('#originalNameCode').html(selectContent.nameCode);
+            $('#originalGroupCode').html(selectContent.groupCode);
+            $('#originalDescription').html(selectContent.description);
+            $('#originalCron').html(selectContent.cron);
+        }
+        $('#myModal').modal({backdrop: 'static', keyboard: false});//禁用点击空白关闭方式打开模态框
+    });
+
+    //更新
+    $('#cornUpdBtn').on('click', function () {
+        var selectContent = $table.bootstrapTable('getSelections')[0];
+        if (typeof(selectContent) == 'undefined') {
+            alert('请选择一列数据!');
+            return;
+        } else {
+            var id = selectContent.id;
+            var newCron = $.trim($('#inputnewcron').val());
+            var reqData = new Object();
+            reqData.id = id;
+            reqData.newCron = newCron;
+            $.ajax({
+                url: '/job',
+                type: 'PUT',
+                data: JSON.stringify(reqData),
+                success: function (response) {
+                    if (response.code == 1) {
+                        alert('success');
+                        $("#myModal").modal("hide");
+                        $table.bootstrapTable('refresh');    //刷新表格
+                    } else {
+                        alert(response.message);
+                    }
+                }
+            });
+        }
+    });
+
+    //立即执行，停止，恢复。
+    $('#runNowBtn').on('click', function () {
+        put(1);
+    });
+    $('#stopBtn').on('click', function () {
+        put(2);
+    });
+    $('#resumeBtn').on('click', function () {
+        put(3);
+    });
+
+    function put(editType) {
+        var selectContent = $table.bootstrapTable('getSelections')[0];
+        if (typeof(selectContent) == 'undefined') {
+            alert('请选择一列数据!');
+            return;
+        } else {
+            var id = selectContent.id;
+            var state = selectContent.state;
+            if (state == 1 && editType == 1) {
+                if (!confirm('确认立即执行此任务？')) {
+                    return;
+                }
+            } else if (state == 1 && editType == 2) {
+                if (!confirm('确认暂停此任务？')) {
+                    return;
+                }
+            } else if (state == 2 && editType == 3) {
+                if (!confirm('确认恢复此任务？')) {
+                    return;
+                }
+            } else {
+                alert('该任务不是正常状态，无法执行当前操作！');
+                return;
+            }
+            $.ajax({
+                url: '/job/' + id + '/' + editType,
+                type: 'PUT',
+                success: function (response) {
+                    if (response.code == 1) {
+                        alert('success');
+                        $("#myModal").modal("hide");
+                        $table.bootstrapTable('refresh');    //刷新表格
+                    } else {
+                        alert(response.message);
+                    }
+                }
+            });
+        }
+    }
+
+    $('#delBtn').on('click', function () {
+        var selectContent = $table.bootstrapTable('getSelections')[0];
+        if (typeof(selectContent) == 'undefined') {
+            alert('请选择一列数据!');
+            return;
+        } else {
+            if (!confirm('删除后不可恢复！确认删除此任务？')) {
+                return;
+            }
+            var id = selectContent.id;
+            $.ajax({
+                url: '/job/' + id,
+                type: 'DELETE',
+                success: function (response) {
+                    if (response.code == 1) {
+                        alert('success');
+                        $("#myModal").modal("hide");
+                        $table.bootstrapTable('refresh');    //刷新表格
+                    } else {
+                        alert(response.message);
+                    }
+                }
+            });
+        }
+    })
+
+</script>
+
+</html>

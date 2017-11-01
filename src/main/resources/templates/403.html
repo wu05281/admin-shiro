@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org">
+<head th:include="header">
+</head>
+<body>
+<div class="wrapper">
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
+        <h3 class="box-title">
+            403
+            <small>forbidden</small>
+        </h3>
+    </section>
+
+    <!-- Main content -->
+    <section class="content">
+        <div class="error-page">
+            <h6 class="headline text-yellow"> 403</h6>
+
+            <div class="error-content">
+                <h3><i class="fa fa-warning text-yellow"></i> 哇哦! 没有权限进行此操作.</h3>
+                <p>
+                    alex, 你可以邮件 <a href="mailto:wubo@paicaifu.com">系统管理员</a>.
+                    <br>
+                    <br>
+                    或者重新<a href="javascript:logout()">登录</a>试试...
+                </p>
+
+                <!-- /.input-group -->
+            </div>
+            <!-- /.error-content -->
+        </div>
+        <!-- /.error-page -->
+    </section>
+    <!-- /.content -->
+</div>
+<!-- ./wrapper -->
+<div th:include="footer"></div>
+<script>
+//父页面打开链接
+function logout() {
+    top.document.location.href="/logout";
+}
+</script>
+</body>
+</html>

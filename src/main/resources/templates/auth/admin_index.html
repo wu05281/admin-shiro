@@ -1,0 +1,191 @@
+<!DOCTYPE HTML>
+<html lang="zh"
+      xmlns:th="http://www.thymeleaf.org">
+<head th:include="header">
+</head>
+<body>
+<div class="wrapper">
+    <section class="content">
+        <div class="box-header">
+            <h3 class="box-title">
+                管理员管理
+                <small>查询, 新增 ...</small>
+            </h3>
+        </div>
+
+        <!--搜索栏-->
+        <div class="row">
+            <!-- Horizontal Form -->
+            <div class="panel panel-default">
+                <div class="panel-body">
+                    <form id="formSearch" class="form-horizontal">
+                        <div class="form-group" style="margin-top:15px">
+                            <label for="userName" class="col-sm-1 control-label">用户名</label>
+                            <div class="col-sm-2">
+                                <input type="text" class="form-control" id="userName" placeholder="用户名">
+                            </div>
+                            <label for="email" class="col-sm-1 control-label">邮箱</label>
+
+                            <div class="col-sm-2">
+                                <input type="email" class="form-control" id="email" placeholder="邮箱">
+                            </div>
+                            <label for="reservation" class="col-sm-1 control-label">创建日期</label>
+                            <div class="col-sm-3">
+                                <input type="text" class="form-control" id="reservation">
+                            </div>
+                            <div class="col-sm-1" style="text-align:left;">
+                                <button type="button" onclick="doQuery();" class="btn btn-primary">查询</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <!-- 查询的结果列表 -->
+        <div class="row">
+            <div class="col-xs-12">
+                <div class="box">
+                    <!--<div class="box-header">-->
+                    <!--<h3 class="box-title">Hover Data Table</h3>-->
+                    <!--</div>-->
+                    <!-- /.box-header -->
+                    <div class="box-body">
+                        <section class="content table-content">
+                            <table id="dataGrid" class="table table-bordered table-hover"></table>
+                        </section>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 针对列表数据项的增删改增操作按钮栏 -->
+    <div id="toolbar">
+        <button type="button" onclick="doAdd();" class="btn btn-primary">新增</button>
+    </div>
+</div>
+
+</body>
+<div th:replace="footer"></div>
+<script type="text/javascript">
+    $table = $("#dataGrid");
+    $(function () {
+        initDataGrid();
+        $('#reservation').daterangepicker({
+            autoUpdateInput: false,//不设置默认值
+            startDate: moment().startOf('day'),
+            //endDate: moment(),
+            minDate: '10/01/2015',    //最小时间
+//            maxDate : moment(), //最大时间
+            dateLimit: {
+                days: 30
+            }, //起止时间的最大间隔
+            showDropdowns: true,
+            showWeekNumbers: false, //是否显示第几周
+            timePicker: false, //是否显示小时和分钟
+            timePickerIncrement: 60, //时间的增量，单位为分钟
+            timePicker12Hour: false, //是否使用12小时制来显示时间
+            ranges: {
+                //'最近1小时': [moment().subtract('hours',1), moment()],
+                '今日': [moment().startOf('day'), moment().endOf('day')],
+                '昨日': [moment().subtract(1, 'days').startOf('day'), moment().subtract(1, 'days').endOf('day')],
+                '最近7日': [moment().subtract(6, 'days'), moment()],
+                '最近30日': [moment().subtract(29, 'days'), moment()]
+            },
+            opens: 'right', //日期选择框的弹出位置
+            buttonClasses: ['btn btn-default'],
+            applyClass: 'btn-small btn-primary blue',
+            cancelClass: 'btn-small',
+            format: 'YYYY-MM-DD HH:mm:ss', //控件中from和to 显示的日期格式
+            separator: ' to ',
+            locale: {
+                applyLabel: '确定',
+                cancelLabel: '取消',
+                fromLabel: '起始时间',
+                toLabel: '结束时间',
+                customRangeLabel: '自定义',
+                daysOfWeek: ['日', '一', '二', '三', '四', '五', '六'],
+                monthNames: ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'],
+                firstDay: 1
+            }
+        }, function (start, end, label) {//格式化日期显示框
+//            $('#reservation').val(start.format('YYYY-MM-DD HH:mm:ss') + ' - ' + end.format('YYYY-MM-DD HH:mm:ss'));
+            $('#reservation').val(start.format('YYYY-MM-DD') + ' - ' + end.format('YYYY-MM-DD'));
+        })
+    });
+    //bootStrapTable只支持{“id”:”123”,”name”,”tom”}这种类型的数据解析
+    function initDataGrid() {
+        $table.bootstrapTable({
+            height: tableModel.getHeight(),
+            idField: "uid",
+            columns: [[
+                {title: "用户名", field: "userName"},
+                {title: "角色", field: "role.roleName"},
+                {title: "状态", field: "state", formatter: tableModel.getState},
+//                {title: "创建时间", field: "createdAt", sortable: true},
+                {title: "创建时间", field: "createdAt"},
+                {title: "更新日期", field: "updatedAt"},
+                {title: "操作", field: "operate", align: 'center', events: operateEvents, formatter: operateFormatter}
+            ]],
+//            url: '/admin/list',
+//            method: 'POST',
+            url: '/admins',
+            method: 'GET',
+            dataType: 'json',
+            contentType: "application/x-www-form-urlencoded",
+            cache: false,
+            striped: true, //是否显示行间隔色
+            toolbar: "#toolbar",
+            queryParams: function (params) {
+                return {
+                    pageIndex: this.pageNumber,
+                    pageSize: this.pageSize,
+                    userName: $("#userName").val(),
+                    email: $("#email").val(),
+                    reservation: $("#reservation").val()
+                };
+            },
+            responseHandler: function (res) {
+                return {
+                    rows: res.t.items,
+                    total: res.t.rowsCount
+                }
+            },
+//            sortName: 'createdAt',
+//            sortOrder: 'asc',
+            pagination: true,
+            sidePagination: 'server',
+            pageNumber: 1, //初始化加载第一页，默认第一页
+            pageSize: 20, //每页的记录行数（*）
+            pageList: [20, 50, 100] ////可供选择的每页的行数（*）
+
+        });
+    }
+
+    function operateFormatter(value, row, index) {
+        if (row.editEnable) {
+            return [
+                '<a href="/admin/from?uid=' + row.uid + '" >',
+                '<i class="glyphicon glyphicon-edit"></i>修改',
+                '</a>  ',
+                '<a class="remove" href="javascript:void(0);">',
+                '<i class="glyphicon glyphicon-remove"></i>删除',
+                '</a>'
+            ].join('');
+        }
+    }
+    window.operateEvents = {
+        'click .remove': function (e, value, row, index) {
+            operaModel.delRow(row.uid, '/admin/delete', 'uid');
+        }
+    };
+
+    function doQuery(params) {
+        $table.bootstrapTable('refresh');    //刷新表格
+    }
+
+    function doAdd() {
+        window.location.href = '/admin/add';    //刷新表格
+    }
+</script>
+</html>
