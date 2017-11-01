@@ -9,3 +9,6 @@
 8. 日志：logback
 9. jdk1.8
 
+## 使用。
+1. 执行resources下的数据库脚本，修改yml文件的mysql链接信息。
+2. 超级管理员账号admin/admin; 
