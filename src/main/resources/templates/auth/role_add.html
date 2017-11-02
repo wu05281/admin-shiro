@@ -13,48 +13,44 @@
 </section>
 
 <!-- Main content -->
-<section class="content">
-    <div class="row">
-        <!-- Horizontal Form -->
-        <div class="box box-info">
-            <form class="form-horizontal">
-                <div class="box-body">
-                    <div class="form-group js-ajax-form" action="/role/save" method="post">
-                        <label for="inputRoleName" class="col-sm-2 control-label">角色名称</label>
+<!-- Horizontal Form -->
+<div class="box box-info">
+    <form class="form-horizontal">
+        <div class="box-body">
+            <div class="form-group">
+                <label for="inputRoleName" class="col-sm-2 control-label">角色名称</label>
 
-                        <div class="col-sm-10">
-                            <input type="text" class="form-control" id="inputRoleName" placeholder="角色名称">
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="inputRoleDesc" class="col-sm-2 control-label">角色描述</label>
+                <div class="col-sm-10">
+                    <input type="text" class="form-control" id="inputRoleName" placeholder="角色名称">
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="inputRoleDesc" class="col-sm-2 control-label">角色描述</label>
 
-                        <div class="col-sm-10">
-                            <input type="text" class="form-control" id="inputRoleDesc" placeholder="角色描述">
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label class="col-sm-2 control-label">是否启用</label>
-                        <div class="col-sm-10">
-                            <select name="enable" class="form-control" id="enable">
-                                <option value="1">是</option>
-                                <option value="0">否</option>
-                            </select>
-                        </div>
-                    </div>
+                <div class="col-sm-10">
+                    <input type="text" class="form-control" id="inputRoleDesc" placeholder="角色描述">
                 </div>
-                <!-- /.box-body -->
-                <div class="box-footer">
-                    <button type="button" class="btn btn-default">取消</button>
-                    <button type="button" id="addRoleBtn" class="btn btn-primary">新增</button>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-2 control-label">是否启用</label>
+                <div class="col-sm-10">
+                    <select name="enable" class="form-control" id="enable">
+                        <option value="1">是</option>
+                        <option value="0">否</option>
+                    </select>
                 </div>
-                <!-- /.box-footer -->
-            </form>
+            </div>
         </div>
-        <!-- /.box -->
-    </div>
-    <!-- /.row -->
-</section>
+        <!-- /.box-body -->
+        <div class="box-footer">
+            <button type="button" class="btn btn-default">取消</button>
+            <button type="button" id="addRoleBtn" class="btn btn-primary">新增</button>
+        </div>
+        <!-- /.box-footer -->
+    </form>
+</div>
+<!-- /.box -->
+
 <!-- /.content -->
 </body>
 <div th:include="footer"></div>
@@ -63,10 +59,14 @@
         var _roleName = $.trim($('#inputRoleName').val());
         var _roleDesc = $.trim($('#inputRoleDesc').val());
         var _roleEnable = $('#enable').val();
-        $.post('/role/add', $.param({roleName: _roleName, roleDesc: _roleDesc, roleEnable: _roleEnable}, true), function (data) {
+        $.post('/role/add', $.param({
+            roleName: _roleName,
+            roleDesc: _roleDesc,
+            roleEnable: _roleEnable
+        }, true), function (data) {
             if (data.code == 1) {
                 alert('success');
-                window.location.href='/role/index';
+                window.location.href = '/role/index';
             } else {
                 alert(data.message);
             }
