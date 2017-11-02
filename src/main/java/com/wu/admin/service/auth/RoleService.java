@@ -78,8 +78,8 @@ public class RoleService {
 
     @Transactional(readOnly = true, rollbackFor = Exception.class)
     public List<RoleOptionVO> listRoleOptions(){
-        String hql = "select r.roleId as roleId, r.roleName as roleName from RoleDO r ";
-        return daoSupport.listByHql(RoleOptionVO.class,hql);
+        String hql = "select r.roleId as roleId, r.roleName as roleName from RoleDO r where r.editEnable=?";
+        return daoSupport.listByHql(RoleOptionVO.class,hql, Boolean.TRUE);
     }
 
 }
