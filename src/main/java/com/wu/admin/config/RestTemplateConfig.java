@@ -2,6 +2,7 @@ package com.wu.admin.config;
 
 import org.apache.http.Header;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.impl.client.DefaultConnectionKeepAliveStrategy;
 import org.apache.http.impl.client.DefaultHttpRequestRetryHandler;
 import org.apache.http.impl.client.HttpClientBuilder;
@@ -54,13 +55,13 @@ public class RestTemplateConfig {
         // 保持长连接配置，需要在头添加Keep-Alive
         httpClientBuilder.setKeepAliveStrategy(new DefaultConnectionKeepAliveStrategy());
 
-//        RequestConfig.Builder builder = RequestConfig.custom();
-//        builder.setConnectionRequestTimeout(200);
-//        builder.setConnectTimeout(5000);
-//        builder.setSocketTimeout(5000);
-//
-//        RequestConfig requestConfig = builder.build();
-//        httpClientBuilder.setDefaultRequestConfig(requestConfig);
+        RequestConfig.Builder builder = RequestConfig.custom();
+        builder.setConnectionRequestTimeout(200);
+        builder.setConnectTimeout(5000);
+        builder.setSocketTimeout(5000);
+
+        RequestConfig requestConfig = builder.build();
+        httpClientBuilder.setDefaultRequestConfig(requestConfig);
 
         List<Header> headers = new ArrayList<>();
         headers.add(new BasicHeader("User-Agent", "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/31.0.1650.16 Safari/537.36"));
@@ -81,7 +82,7 @@ public class RestTemplateConfig {
         // 连接不够用的等待时间，不宜过长，必须设置，比如连接不够用时，时间过长将是灾难性的
         clientHttpRequestFactory.setConnectionRequestTimeout(200);
         // 缓冲请求数据，默认值是true。通过POST或者PUT大量发送数据时，建议将此属性更改为false，以免耗尽内存。
-        // clientHttpRequestFactory.setBufferRequestBody(false);
+        clientHttpRequestFactory.setBufferRequestBody(false);
 
         // 添加内容转换器
         List<HttpMessageConverter<?>> messageConverters = new ArrayList<>();
@@ -93,7 +94,6 @@ public class RestTemplateConfig {
         RestTemplate restTemplate = new RestTemplate(messageConverters);
         restTemplate.setRequestFactory(clientHttpRequestFactory);
         restTemplate.setErrorHandler(new DefaultResponseErrorHandler());
-        System.out.println("restTemplate init ----------------------");
         return restTemplate;
 
     }
@@ -101,9 +101,9 @@ public class RestTemplateConfig {
     private StringHttpMessageConverter initStringHttpMessageConverter() {
         StringHttpMessageConverter stringHttpMessageConverter = new StringHttpMessageConverter(Charset.forName("UTF-8"));
         List<MediaType> supportedMediaTypes = new ArrayList<MediaType>();
-        supportedMediaTypes.add(new MediaType("text","plain", Charset.defaultCharset()));
-        supportedMediaTypes.add(new MediaType("application","json", Charset.defaultCharset()));
-        supportedMediaTypes.add(new MediaType("text","html", Charset.defaultCharset()));
+        supportedMediaTypes.add(new MediaType("text", "plain", Charset.defaultCharset()));
+        supportedMediaTypes.add(new MediaType("application", "json", Charset.defaultCharset()));
+        supportedMediaTypes.add(new MediaType("text", "html", Charset.defaultCharset()));
         stringHttpMessageConverter.setSupportedMediaTypes(supportedMediaTypes);
         return stringHttpMessageConverter;
     }
