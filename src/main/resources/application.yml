@@ -35,3 +35,12 @@ spring:
       date-format: yyyy-MM-dd HH:mm:ss
       joda-date-time-format: yyyy-MM-dd HH:mm:ss
 
+
+  #activemq配置
+  activemq:
+    broker-url: tcp://localhost:61616
+    in-memory: true
+    #如果此处设置为true，需要加如下的依赖包，否则会自动配置失败，报JmsMessagingTemplate注入失败
+    pool:
+      enabled: true
+

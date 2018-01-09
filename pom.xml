@@ -137,6 +137,19 @@
 		</dependency>
 
 
+		<!-- 集成activemq -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-activemq</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.activemq</groupId>
+			<artifactId>activemq-pool</artifactId>
+			<version>5.14.5</version>
+		</dependency>
+
+
+
 	</dependencies>
 
 	<build>
