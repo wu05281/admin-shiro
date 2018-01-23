@@ -44,3 +44,15 @@ spring:
     pool:
       enabled: true
 
+#actuator 中/beans访问需要的配置
+management:
+  security:
+    enabled: false
+  #actuator 中/beans访问统一加上/beans，以方便权限管理配置
+  context-path: /mgmt
+
+#允许远程关闭服务 curl -X POST http://localhost:8080/shutdown
+endpoints:
+  shutdown:
+    enabled: true
+

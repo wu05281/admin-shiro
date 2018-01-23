@@ -35,7 +35,6 @@ public class InitJobService {
 
     @PostConstruct
     public void init() throws Exception {
-        System.out.println("定时任务初始化=========================");
         List<JobDetailDO> jobDetails = jobDetailService.listActiveJobs();
         logger.info("定时任务初始化:{}", jobDetails);
         for (JobDetailDO jobInfo : jobDetails) {
