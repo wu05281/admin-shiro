@@ -1,4 +1,6 @@
 spring:
+  application:
+    name: admin-shiro
   profiles:
     active: dev
   datasource:
@@ -6,6 +8,16 @@ spring:
     username: root
     password: 123456
     driver-class-name: com.mysql.jdbc.Driver
+  zipkin:
+    base-url: http://localhost:9411
+    service:
+      name: ${spring.application.name}
+  sleuth:
+    #监控开关
+    enabled: true
+    #采样率
+    sampler:
+      percentage: 1
 
 #create：每次加载hibernate时都会删除上一次的生成的表，然后根据你的model类再重新来生成新表，哪怕两次没有任何改变也要这样执行，这就是导致数据库表数据丢失的一个重要原因。
 #create-drop：每次加载hibernate时根据model类生成表，但是sessionFactory一关闭,表就自动删除。
@@ -43,6 +55,7 @@ spring:
     #如果此处设置为true，需要加如下的依赖包，否则会自动配置失败，报JmsMessagingTemplate注入失败
     pool:
       enabled: true
+
 
 #actuator 中/beans访问需要的配置
 management:
